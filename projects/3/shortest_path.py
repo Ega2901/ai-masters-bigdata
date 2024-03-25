@@ -1,6 +1,5 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col
-from graphframes import GraphFrame
+from pyspark.sql.functions import col, collect_list
 import sys
 
 def main():
@@ -23,23 +22,39 @@ def main():
     # Загружаем данные графа
     graph_data = spark.read.csv(graph_path, sep="\t", header=False)
 
-    # Инвертируем направление ребер
-    inverted_graph_data = graph_data.select(col("_c1").alias("src"), col("_c0").alias("dst"))
+    # Создаем RDD с данными графа
+    edges = graph_data.rdd.map(lambda row: (row._1, row._2))
 
-    # Разделяем данные на вершины и ребра
-    vertices = graph_data.union(inverted_graph_data).selectExpr("_c0 as id").distinct()
-    edges = inverted_graph_data
-
-    # Создаем граф
-    graph = GraphFrame(vertices, edges)
-
-    # Выполняем BFS для поиска кратчайшего пути
-    shortest_paths = graph.bfs(fromExpr=f"id = '{start_node}'", toExpr=f"id = '{end_node}'")
+    # Выполняем алгоритм BFS для поиска кратчайшего пути
+    shortest_paths = bfs(edges, start_node, end_node)
 
     # Сохраняем результаты в CSV файл
-    shortest_paths.select("from.id", "to.id").write.csv(output_dir)
+    shortest_paths.map(lambda path: ','.join(path)).coalesce(1).saveAsTextFile(output_dir)
 
+    # Завершаем SparkSession
     spark.stop()
+
+def bfs(graph, start_node, end_node):
+    visited = set()
+    queue = [[start_node]]
+
+    while queue:
+        path = queue.pop(0)
+        node = path[-1]
+
+        if node == end_node:
+            return [path]
+
+        if node not in visited:
+            visited.add(node)
+            neighbors = graph.filter(lambda edge: edge[0] == node).map(lambda edge: edge[1]).collect()
+
+            for neighbor in neighbors:
+                new_path = list(path)
+                new_path.append(neighbor)
+                queue.append(new_path)
+
+    return []
 
 if __name__ == "__main__":
     main()
