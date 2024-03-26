@@ -1,5 +1,4 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, collect_list
 import sys
 
 def bfs(graph, start_node, end_node):
@@ -45,13 +44,13 @@ def main():
     graph_data = spark.read.csv(graph_path, sep="\t", header=False)
 
     # Создаем RDD с данными графа
-    edges = graph_data.rdd.map(lambda row: (row._1, row._2))
+    edges = graph_data.rdd.map(lambda row: (row[0], row[1]))
 
     # Выполняем алгоритм BFS для поиска кратчайшего пути
     shortest_paths = bfs(edges, start_node, end_node)
 
     # Сохраняем результаты в CSV файл
-    shortest_paths.map(lambda path: ','.join(path)).coalesce(1).saveAsTextFile(output_dir)
+    spark.sparkContext.parallelize(shortest_paths).map(lambda path: ','.join(map(str, path))).coalesce(1).saveAsTextFile(output_dir)
 
     # Завершаем SparkSession
     spark.stop()
