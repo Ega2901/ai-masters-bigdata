@@ -2,6 +2,28 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, collect_list
 import sys
 
+def bfs(graph, start_node, end_node):
+    visited = set()
+    queue = [[start_node]]
+
+    while queue:
+        path = queue.pop(0)
+        node = path[-1]
+
+        if node == end_node:
+            return [path]
+
+        if node not in visited:
+            visited.add(node)
+            neighbors = graph.filter(lambda edge: edge[0] == node).map(lambda edge: edge[1]).collect()
+
+            for neighbor in neighbors:
+                new_path = list(path)
+                new_path.append(neighbor)
+                queue.append(new_path)
+
+    return []
+
 def main():
     # Проверяем количество аргументов
     if len(sys.argv) != 5:
@@ -34,27 +56,6 @@ def main():
     # Завершаем SparkSession
     spark.stop()
 
-def bfs(graph, start_node, end_node):
-    visited = set()
-    queue = [[start_node]]
-
-    while queue:
-        path = queue.pop(0)
-        node = path[-1]
-
-        if node == end_node:
-            return [path]
-
-        if node not in visited:
-            visited.add(node)
-            neighbors = graph.filter(lambda edge: edge[0] == node).map(lambda edge: edge[1]).collect()
-
-            for neighbor in neighbors:
-                new_path = list(path)
-                new_path.append(neighbor)
-                queue.append(new_path)
-
-    return []
 
 if __name__ == "__main__":
     main()
