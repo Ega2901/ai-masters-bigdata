@@ -1,13 +1,16 @@
 from pyspark.sql import SparkSession
 import sys
 
-def bfs(graph, start_node, end_node):
+def bfs(graph, start_node, end_node, max_path_length):
     visited = set()
     queue = [[start_node]]
 
     while queue:
         path = queue.pop(0)
         node = path[-1]
+
+        if len(path) > max_path_length:
+            continue
 
         if node == end_node:
             return [path]
@@ -46,8 +49,12 @@ def main():
     # Создаем RDD с данными графа
     edges = graph_data.rdd.map(lambda row: (row[0], row[1]))
 
-    # Выполняем алгоритм BFS для поиска кратчайшего пути
-    shortest_paths = bfs(edges, start_node, end_node)
+    # Определяем максимальную длину пути как среднее значение длин всех путей
+    avg_path_length = edges.map(lambda edge: (edge[0], len(edge[1]))).groupByKey().map(lambda x: (x[0], sum(x[1]) / len(x[1]))).collect()
+    max_path_length = max(avg_path_length, key=lambda x: x[1])[1]
+
+    # Выполняем алгоритм BFS для поиска кратчайшего пути с учетом максимальной длины
+    shortest_paths = bfs(edges, start_node, end_node, max_path_length)
 
     # Сохраняем результаты в CSV файл
     spark.sparkContext.parallelize(shortest_paths).map(lambda path: ','.join(map(str, path))).coalesce(1).saveAsTextFile(output_dir)
