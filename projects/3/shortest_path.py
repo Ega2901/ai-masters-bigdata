@@ -17,7 +17,7 @@ def bfs(graph, start_node, end_node, max_path_length):
 
         if node not in visited:
             visited.add(node)
-            neighbors = graph.filter(lambda edge: edge[0] == node).map(lambda edge: edge[1]).collect()
+            neighbors = graph.filter(lambda edge: edge[1] == node).map(lambda edge: edge[0]).collect()
 
             for neighbor in neighbors:
                 new_path = list(path)
@@ -47,7 +47,7 @@ def main():
     graph_data = spark.read.csv(graph_path, sep="\t", header=False)
 
     # Создаем RDD с данными графа
-    edges = graph_data.rdd.map(lambda row: (row[0], row[1]))
+    edges = graph_data.rdd.map(lambda row: (row[1], row[0]))  # Инвертируем вершины ребер
 
     # Определяем максимальную длину пути как среднее значение длин всех путей
     avg_path_length = edges.map(lambda edge: (edge[0], len(edge[1]))).groupByKey().map(lambda x: (x[0], sum(x[1]) / len(x[1]))).collect()
