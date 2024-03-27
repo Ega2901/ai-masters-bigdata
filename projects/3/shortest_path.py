@@ -5,7 +5,7 @@ from pyspark.sql.types import IntegerType, StructType, StructField
 from pyspark.sql.functions import col, lit, when
 import sys
 
-def shortest_path(v_from, v_to, dataset_path=None, output_dir=None, max_path_length=100):
+def shortest_path(v_from, v_to, dataset_path=None, output_dir=None, max_path_length=100000):
     # Initialize Spark session
     spark = SparkSession.builder \
         .appName("ShortestPathFinder") \
