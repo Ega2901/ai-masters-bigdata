@@ -83,7 +83,7 @@ def shortest_path(v_from, v_to, dataset_path=None, output_dir=None):
     rcols = cols[::-1]
     shortest_paths = graph.select(concat_ws(",", *rcols, lit(str(v_to))).alias("path"))
     
-    shortest_paths.show.write.csv(output_dir, mode="overwrite", sep="\n", header=False)
+    shortest_paths.write.csv(output_dir, mode="overwrite", sep="\n", header=False)
 
     spark.stop()
 
