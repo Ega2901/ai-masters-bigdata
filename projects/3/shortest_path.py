@@ -10,7 +10,7 @@ def shortest_path(v_from, v_to, dataset_path, output_dir):
     
     conf = SparkConf()
     sc = SparkContext(appName="Pagerank", conf=conf)
-    spark = SparkSession(sc)
+    spark = SparkSession.builder.sc.getOrCreate()
     
     # Схема для графа и расстояний
     graph_schema = StructType([
