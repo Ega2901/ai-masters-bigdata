@@ -9,7 +9,7 @@ import pyspark.sql.functions as f
 conf = SparkConf()
 sc = SparkContext(appName="Pagerank", conf=conf)
 
-def shortest_path(v_from, v_to, dataset_path=None, output_dir=None):
+def shortest_path(v_from, v_to, dataset_path, output_dir):
     
     spark = SparkSession(sc)
     
@@ -24,7 +24,7 @@ def shortest_path(v_from, v_to, dataset_path=None, output_dir=None):
     ])
 
     # Чтение данных из файла с репартиционированием
-    edges = spark.read.csv(dataset_path, sep="\t", schema=graph_schema).repartition(10)
+    edges = spark.read.csv(str(dataset_path), sep="\t", schema=graph_schema).repartition(10)
 
     # Кэширование
     edges_broadcast = f.broadcast(edges)
@@ -83,7 +83,7 @@ def shortest_path(v_from, v_to, dataset_path=None, output_dir=None):
     rcols = cols[::-1]
     shortest_paths = graph.select(concat_ws(",", *rcols, lit(str(v_to))).alias("path"))
     
-    shortest_paths.write.csv(output_dir, mode="overwrite", sep="\n", header=False)
+    shortest_paths.write.csv(str(output_dir), mode="overwrite", sep="\n", header=False)
 
     spark.stop()
 
@@ -92,10 +92,10 @@ if __name__ == "__main__":
     if len(sys.argv) != 5:
         print("Usage: shortest_path.py <start_vertex> <end_vertex> <dataset_path> <output_dir>")
         sys.exit(1)
-
-    start_vertex = int(sys.argv[1])
-    end_vertex = int(sys.argv[2])
+        
+    v_from = int(sys.argv[1])
+    v_to = int(sys.argv[2])
     dataset_path = sys.argv[3]
     output_dir = sys.argv[4]
 
-    shortest_path(start_vertex, end_vertex, dataset_path, output_dir)
+    shortest_path(v_from, v_to, dataset_path, output_dir)
