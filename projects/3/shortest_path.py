@@ -6,11 +6,10 @@ from pyspark.sql.types import IntegerType, StructType, StructField, StringType
 from pyspark.sql.functions import col, lit, when, broadcast, concat_ws
 import pyspark.sql.functions as f
 
-conf = SparkConf()
-sc = SparkContext(appName="Pagerank", conf=conf)
-
 def shortest_path(v_from, v_to, dataset_path, output_dir):
     
+    conf = SparkConf()
+    sc = SparkContext(appName="Pagerank", conf=conf)
     spark = SparkSession(sc)
     
     # Схема для графа и расстояний
@@ -88,14 +87,9 @@ def shortest_path(v_from, v_to, dataset_path, output_dir):
     spark.stop()
 
 
-if __name__ == "__main__":
-    if len(sys.argv) != 5:
-        print("Usage: shortest_path.py <start_vertex> <end_vertex> <dataset_path> <output_dir>")
-        sys.exit(1)
-        
+if __name__ == "__main__":   
     v_from = int(sys.argv[1])
     v_to = int(sys.argv[2])
     dataset_path = sys.argv[3]
     output_dir = sys.argv[4]
-
     shortest_path(v_from, v_to, dataset_path, output_dir)
