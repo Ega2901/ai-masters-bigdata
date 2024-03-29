@@ -1,76 +1,92 @@
 # shortest_path.py
 
+from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
-from pyspark.sql.types import IntegerType, StructType, StructField
-from pyspark.sql.functions import col, lit, when
-import sys
+from pyspark.sql.types import IntegerType, StructType, StructField, StringType
+from pyspark.sql.functions import col, lit, when, broadcast, concat_ws
+import pyspark.sql.functions as f
 
-def shortest_path(v_from, v_to, dataset_path=None, output_dir=None, max_path_length=100000):
-    # Initialize Spark session
-    spark = SparkSession.builder \
-        .appName("ShortestPathFinder") \
-        .getOrCreate()
+conf = SparkConf()
+sc = SparkContext(appName="Pagerank", conf=conf)
+
+def shortest_path(v_from, v_to, dataset_path=None, output_dir=None):
     
-    # Define schema for graph edges
+    spark = SparkSession(sc)
+    
+    # Схема для графа и расстояний
     graph_schema = StructType([
         StructField("user_id", IntegerType(), False),
         StructField("follower_id", IntegerType(), False)
     ])
-    
-    # Read graph edges from dataset
-    edges = spark.read.csv(dataset_path, sep="\t", schema=graph_schema)       
-    
-    # Cache the edges DataFrame for better performance
-    edges.cache()
-    
-    # Initialize DataFrame to store distances from the starting vertex
     dist_schema = StructType([
         StructField("vertex", IntegerType(), False),
         StructField("distance", IntegerType(), False)
     ])
-    distances = spark.createDataFrame([(v_from, 0)], dist_schema)
-    
-    # Initialize variables for loop and distance counter
+
+    # Чтение данных из файла с репартиционированием
+    edges = spark.read.csv(dataset_path, sep="\t", schema=graph_schema).repartition(10)
+
+    # Кэширование
+    edges_broadcast = f.broadcast(edges)
+
+    # Начальные значения
+
     d = 0
-    while d < max_path_length:
-        # Join distances DataFrame with edges DataFrame to find next vertices and their distances
-        candidates = distances.join(edges, distances.vertex == edges.user_id)
-        candidates = candidates.select(col("follower_id").alias("vertex"), (distances.distance + 1).alias("distance"))
-        
-        # Cache the candidates DataFrame for better performance
-        candidates.cache()
-        
-        # Update distances DataFrame with new distances
-        new_distances = distances.join(candidates, on="vertex", how="full_outer") \
-            .select("vertex", 
-                    when(distances.distance.isNull(), candidates.distance)
-                    .when(candidates.distance.isNull(), distances.distance)
-                    .otherwise(when(distances.distance < candidates.distance, distances.distance)
-                               .otherwise(candidates.distance))
-                    .alias("distance")) \
-            .persist()
-        
-        # Count the number of vertices at distance d+1
-        count = new_distances.where(new_distances.distance == d + 1).count()
-        
-        # Check if the target vertex has been reached
-        target_reached = new_distances.where(new_distances.vertex == v_to).count() > 0
-        
-        # Break the loop if the target vertex has been reached or if there are no more vertices at distance d+1
-        if target_reached or count == 0:
+
+    # Инициализация DataFrame для расстояний
+    gr = spark.createDataFrame([(v_from, 0)], dist_schema).drop('distance')
+
+    # Инициализация графа
+    graph = f.broadcast(gr)
+
+    cols = graph.columns
+
+
+    while True:
+        # Обновление расстояний
+        distances = graph.select('vertex').distinct() \
+                         .join(broadcast(edges_broadcast), edges_broadcast.follower_id == graph.vertex, "left") \
+                         .filter(~f.col("user_id").isNull()) \
+                         .drop('follower_id')
+
+        # Проверка наличия целевой вершины
+        if distances.filter(distances.user_id == v_to).count() > 0:
+            # Построение графа для кратчайшего пути
+            graph = distances.join(graph, on = "vertex", how = "left") \
+                             .filter(f.col('user_id') == v_to) \
+                             .withColumnRenamed('vertex', str(d)) \
+                             .drop('user_id') \
+                             .drop('vertex') 
             break
+            
+        if d < 2:
+            graph = distances.join(graph, on = "vertex", how = "left") \
+                         .filter((f.col("user_id") != graph.vertex) & (f.col("user_id") != graph[d])) \
+                         .withColumnRenamed('vertex', str(d)) \
+                         .withColumnRenamed("user_id", 'vertex') \
         
-        # Update distances DataFrame and distance counter
-        distances = candidates
+        else:
+            graph = distances.join(graph, on = "vertex", how = "left") \
+                             .filter((f.col("user_id") != graph.vertex) & (f.col("user_id") != graph[d]) & (f.col("user_id") != graph[d-1]) & (f.col("user_id") != graph[d-2])) \
+                             .withColumnRenamed('vertex', str(d)) \
+                             .withColumnRenamed("user_id", 'vertex') \
+
+            
+        cols = graph.columns
+
+        # Обновление расстояний
         d += 1
+
+    # Вывод кратчайшего пути
+    shortest_paths = graph
+    cols = graph.columns
+    rcols = cols[::-1]
+    shortest_paths = graph.select(concat_ws(",", *rcols, lit(str(v_to))).alias("path"))
     
-    # If the target vertex has been reached, extract and save the shortest paths
-    if target_reached:
-        shortest_paths = new_distances.where(new_distances.vertex == v_to).select("distance").distinct()
-        shortest_paths.write.csv(output_dir, mode="overwrite", header=False)
-    
-    # Stop Spark session
+    shortest_paths.show.write.csv(output_dir, mode="overwrite", sep="\n", header=False)
+
     spark.stop()
+
 
 if __name__ == "__main__":
     if len(sys.argv) != 5:
