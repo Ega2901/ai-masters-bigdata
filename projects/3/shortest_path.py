@@ -23,7 +23,7 @@ def shortest_path(v_from, v_to, dataset_path, output_dir):
     ])
 
     # Чтение данных из файла с репартиционированием
-    edges = spark.read.csv(str(dataset_path), sep="\t", schema=graph_schema).repartition(10)
+    edges = spark.read.csv(dataset_path, sep="\t", schema=graph_schema).repartition(10)
 
     # Кэширование
     edges_broadcast = f.broadcast(edges)
@@ -82,7 +82,7 @@ def shortest_path(v_from, v_to, dataset_path, output_dir):
     rcols = cols[::-1]
     shortest_paths = graph.select(concat_ws(",", *rcols, lit(str(v_to))).alias("path"))
     
-    shortest_paths.write.csv(str(output_dir), mode="overwrite", sep="\n", header=False)
+    shortest_paths.write.csv(output_dir, mode="overwrite", sep="\n", header=False)
 
     spark.stop()
 
