@@ -86,7 +86,6 @@ def shortest_path(v_from, v_to, dataset_path, output_dir):
 if __name__ == "__main__":
     conf = SparkConf()
     sc = SparkContext(appName="Pagerank", conf=conf)
-    spark = SparkSession.builder.sc.getOrCreate()
     v_from = int(sys.argv[1])
     v_to = int(sys.argv[2])
     dataset_path = sys.argv[3]
