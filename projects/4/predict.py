@@ -17,11 +17,6 @@ from pyspark.sql.types import StringType
 import re
 from pyspark.sql.functions import monotonically_increasing_id
 
-def text_prep(text):
-    text = str(text).lower()
-    text = re.sub('\s+',' ',text)
-    text = text.strip()
-    return text
 
 if __name__ == "__main__":
     conf = SparkConf()
@@ -33,13 +28,8 @@ if __name__ == "__main__":
     model = PipelineModel.load(model_path)
     df = spark.read.json(test_path)
     df.cache()
-    df2 = df.select("reviewText")
-    prep_text_udf = udf(text_prep, StringType())
-    t = df2.withColumn('prep_text', prep_text_udf("reviewText"))\
-        .filter('prep_text <> ""')
-    predictions = model.transform(t)
+    predictions = model.transform(df)
     predictions = predictions.withColumn("id", monotonically_increasing_id())
-    predictions_to_save = predictions.select("id", "prediction")
-    predictions_to_save.coalesce(1).write.csv(pred_path, header=False)
+    predictions.write.csv(pred_path, header=False)
     spark.catalog.clearCache()
     spark.stop()
