@@ -9,4 +9,4 @@ Tokenizer = Tokenizer(inputCol = 'reviewText', outputCol = 'tokens')
 hashingTF = HashingTF(numFeatures=100, binary=True, inputCol = Tokenizer.getOutputCol(), outputCol = 'rawFeatures')
 lr = LogisticRegression(featuresCol='rawFeatures',
                         labelCol='overall')
-pipeline = Pipeline(stages = [Tokenizer, hashingTF, assembler, lr])
+pipeline = Pipeline(stages = [Tokenizer, hashingTF, lr])
