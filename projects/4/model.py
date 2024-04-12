@@ -3,7 +3,19 @@ from pyspark.ml.feature import HashingTF, Tokenizer
 from pyspark.ml import Pipeline
 from pyspark.ml.feature import VectorAssembler
 from pyspark.ml.classification import LogisticRegression
-
+from pyspark.sql.types import *
+import pyspark.sql.functions as f
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType, BooleanType
+# для создания пользовательских функций
+from pyspark.sql.functions import udf 
+# для использования оконных функций
+from pyspark.sql.window import Window
+# для работы с PySpark DataFrame
+from pyspark.sql import DataFrame
+# для задания типа возвращаемого udf функцией
+from pyspark.sql.types import StringType
+# для создания регулярных выражений
+import re
 
 class Textprep:
   
