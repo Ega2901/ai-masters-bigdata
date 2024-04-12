@@ -34,7 +34,7 @@ class Textprep:
         .filter('prep_text <> ""')
     return df
 
-Textprep = Textprep().preptxt
+Textprep = Textprep(df).preptxt
 Tokenizer = Tokenizer(inputCol = 'prep_text', outputCol = 'tokens')
 hashingTF = HashingTF(inputCol = 'tokens', outputCol = 'rawFeatures')
 assembler = VectorAssembler(inputCols=['rawFeatures'],
