@@ -13,6 +13,7 @@ if __name__ == "__main__":
     conf = SparkConf()
     train_path = str(sys.argv[1])
     model_path = str(sys.argv[2])
+    spark.catalog.clearCache()
     df = spark.read.json(train_path)
     df.cache()
     pipeline_model = pipeline.fit(df)
