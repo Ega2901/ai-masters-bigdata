@@ -5,8 +5,8 @@ from pyspark.ml.feature import VectorAssembler
 from pyspark.ml.classification import LogisticRegression
 
 
-Tokenizer = Tokenizer(inputCol = 'reviewText', outputCol = 'tokens')
-hashingTF = HashingTF(numFeatures=100, binary=True, inputCol = Tokenizer.getOutputCol(), outputCol = 'rawFeatures')
+tokenizer = Tokenizer(inputCol = 'reviewText', outputCol = 'tokens')
+hashingTF = HashingTF(numFeatures=100, binary=True, inputCol = 'tokens', outputCol = 'rawFeatures')
 lr = LogisticRegression(featuresCol='rawFeatures',
                         labelCol='overall')
-pipeline = Pipeline(stages = [Tokenizer, hashingTF, lr])
+pipeline = Pipeline(stages = [tokenizer, hashingTF, lr])
