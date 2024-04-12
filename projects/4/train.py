@@ -18,11 +18,6 @@ from pyspark.sql.types import StringType
 # для создания регулярных выражений
 import re
 
-def text_prep(text):
-    text = str(text).lower()
-    text = re.sub('\s+',' ',text)
-    text = text.strip()
-    return text
 
 if __name__ == "__main__":
     conf = SparkConf()
@@ -30,11 +25,7 @@ if __name__ == "__main__":
     model_path = str(sys.argv[2])
     df = spark.read.json(train_path)
     df.cache()
-    df2 = df.select("overall", "reviewText")
-    prep_text_udf = udf(text_prep, StringType())
-    t = df2.withColumn('prep_text', prep_text_udf("reviewText"))\
-        .filter('prep_text <> ""')
-    pipeline_model = pipeline.fit(t)
+    pipeline_model = pipeline.fit(df)
     pipeline_model.write().overwrite().save(model_path)
     spark.catalog.clearCache()
     spark.stop()
