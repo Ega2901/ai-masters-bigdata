@@ -12,4 +12,4 @@ assembler = VectorAssembler(inputCols=['rawFeatures'],
                             outputCol='features')
 lr = LogisticRegression(featuresCol='features',
                         labelCol='overall')
-pipeline = Pipeline(stages = [Textprep, Tokenizer, hashingTF, assembler, lr])
+pipeline = Pipeline(stages = [Tokenizer, hashingTF, assembler, lr])
