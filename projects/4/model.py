@@ -6,7 +6,7 @@ from pyspark.ml.classification import LogisticRegression
 from pyspark.sql.types import *
 import pyspark.sql.functions as f
 
-Tokenizer = Tokenizer(inputCol = 'prep_text', outputCol = 'tokens')
+Tokenizer = Tokenizer(inputCol = "reviewText", outputCol = 'tokens')
 hashingTF = HashingTF(inputCol = 'tokens', outputCol = 'rawFeatures')
 assembler = VectorAssembler(inputCols=['rawFeatures'],
                             outputCol='features')
