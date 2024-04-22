@@ -1,0 +1,12 @@
+name: mlflow-env
+channels:
+  - defaults
+dependencies:
+  - python=3.8
+  - pip
+  - pip:
+    - mlflow==1.20.2
+    - scikit-learn
+    - pandas
+    - joblib
+
