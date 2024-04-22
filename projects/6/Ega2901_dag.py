@@ -1,17 +1,49 @@
-from datetime import datetime
-
+ifrom datetime import datetime
 from airflow import DAG
-from airflow.decorators import task
 from airflow.operators.bash import BashOperator
+from airflow.sensors.filesystem import FileSensor
+from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
 
-# A DAG represents a workflow, a collection of tasks
-with DAG(dag_id="Ega2901_dag", start_date=datetime(2022, 1, 1), schedule="0 0 * * *") as dag:
-    # Tasks are represented as operators
-    hello = BashOperator(task_id="hello", bash_command="echo hello")
+base_dir = '/opt/airflow/airflow_home/dags/example'
+pyspark_python = "/opt/conda/envs/dsenv/bin/python"
 
-    @task()
-    def airflow():
-        print("airflow")
+with DAG(
+        dag_id="Ega2901_dag",
+        start_date=datetime(2023, 4, 26),
+        schedule=None,
+        catchup=False,
+        description="Это наш первый DAG",
+        doc_md = """
+        Это учебный DAG. Не надо его переносить в продакшен!
+        """,
+        tags=["example"],
+) as dag:
+    bash_task = BashOperator(
+        task_id='bash_task',
+        bash_command=f'pwd; echo $USER; hdfs dfs -ls /datasets'
+    )
 
-    # Set dependencies between tasks
-    hello >> airflow()
+    sensor_task = FileSensor(
+        task_id=f'sensor_task',
+        filepath=f"{base_dir}/some_file",
+        poke_interval=30,
+        timeout=60 * 5,
+    )
+
+    count_lines_task = BashOperator(
+        task_id='count_lines_task',
+        bash_command='wc -l /datasets/movielens/ratings.csv',
+    )
+
+    spark_task = SparkSubmitOperator(
+        task_id="spark_task",
+        application=f"{base_dir}/spark_example.py",
+        spark_binary="/usr/bin/spark3-submit",
+        num_executors=10,
+        executor_cores=1,
+        executor_memory="2G",
+        env_vars={"PYSPARK_PYTHON": pyspark_python},
+    )
+
+    sensor_task >> bash_task >> count_lines_task >> spark_task
+
