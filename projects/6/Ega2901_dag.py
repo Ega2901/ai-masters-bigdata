@@ -32,7 +32,7 @@ with DAG(
 
     count_lines_task = BashOperator(
         task_id='count_lines_task',
-        bash_command='wc -l /datasets/movielens/ratings.csv',
+        bash_command='hdfs dfs -wc -l /datasets/movielens/ratings.csv',
     )
 
     spark_task = SparkSubmitOperator(
