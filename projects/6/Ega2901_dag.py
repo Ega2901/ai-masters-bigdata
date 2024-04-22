@@ -35,5 +35,5 @@ with DAG(
         bash_command=f'hdfs dfs -cat /datasets/movielens/ratings.csv | wc -l',
     )
 
-    sensor_task >> bash_task >> count_lines_task >> spark_task
+    sensor_task >> bash_task >> count_lines_task
 
