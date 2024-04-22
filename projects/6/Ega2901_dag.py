@@ -35,15 +35,5 @@ with DAG(
         bash_command=f'hdfs dfs -cat /datasets/movielens/ratings.csv | wc -l',
     )
 
-    spark_task = SparkSubmitOperator(
-        task_id="spark_task",
-        application=f"{base_dir}/spark_example.py",
-        spark_binary="/usr/bin/spark3-submit",
-        num_executors=10,
-        executor_cores=1,
-        executor_memory="2G",
-        env_vars={"PYSPARK_PYTHON": pyspark_python},
-    )
-
     sensor_task >> bash_task >> count_lines_task >> spark_task
 
