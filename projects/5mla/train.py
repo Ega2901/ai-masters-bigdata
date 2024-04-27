@@ -24,6 +24,7 @@ if len(sys.argv) < 3:
     sys.exit(1)
 
 train_path = sys.argv[1]
+print("TRAINPATH==", train_path)
 model_param1 = float(sys.argv[2])
 logging.info(f"TRAIN_PATH {train_path}")
 logging.info(f"MODEL_PARAM1 {model_param1}")
