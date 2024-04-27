@@ -20,14 +20,12 @@ logging.info("ARGS {}".format(sys.argv[1:]))
 
 # Read script arguments
 try:
-    proj_id = sys.argv[1]
-    train_path = sys.argv[2]
-    model_param1 = float(sys.argv[3]) if len(sys.argv) > 3 else None
+    train_path = sys.argv[1]
+    model_param1 = float(sys.argv[2]) if len(sys.argv) > 3 else None
 except:
     logging.critical("Need to pass project_id, train dataset path, and model_param1")
     sys.exit(1)
 
-logging.info(f"TRAIN_ID {proj_id}")
 logging.info(f"TRAIN_PATH {train_path}")
 logging.info(f"MODEL_PARAM1 {model_param1}")
 
@@ -64,7 +62,7 @@ with mlflow.start_run() as run:
     logging.info(f"model score: {model_score:.3f}")
 
     # Save the model
-    model_output_path = "{}.joblib".format(proj_id)
+    model_output_path = "{}.joblib".format('.')
     dump(model, model_output_path)
 
     # Log model output
