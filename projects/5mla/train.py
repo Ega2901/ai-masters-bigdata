@@ -68,25 +68,22 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 # Log parameters
 mlflow.log_param("model_param1", model_param1)
 
+# End current run, if exists
+if mlflow.active_run():
+    mlflow.end_run()
+
 # Start MLflow run
 with mlflow.start_run() as run:
-    # Define the full pipeline including preprocessing and model
-    model = Pipeline(steps=[
-        ('preprocessor', preprocessor),
-        ('classifier', LogisticRegression())  # You can replace this with your custom model
-    ])
-
     # Train the model
     model.fit(X_train, y_train)
     
     # Evaluate model
-    y_pred = model.predict_proba(X_test)
-    loss = log_loss(y_test, y_pred)
+    model_score = model.score(X_test, y_test)
     
     # Log metrics
-    mlflow.log_metric("log_loss", loss)
+    mlflow.log_metric("model_score", model_score)
     
-    logging.info(f"log loss: {loss:.3f}")
+    logging.info(f"model score: {model_score:.3f}")
 
     # Save the model
     model_output_path = "model.joblib"
