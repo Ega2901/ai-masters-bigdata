@@ -37,7 +37,7 @@ fields = ["id", "label"] + numeric_features + categorical_features
 # Определение опций чтения данных
 read_table_opts = dict(sep="\t", names=fields, index_col=False)
 df = pd.read_table(train_path, **read_table_opts)
-print(df.columns)
+print(df.head(2))
 # Split train/test
 X_train, X_test, y_train, y_test = train_test_split(
     df.iloc[:,:-1], df.iloc[:,-1], test_size=0.2, random_state=42
