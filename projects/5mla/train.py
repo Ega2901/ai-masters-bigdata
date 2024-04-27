@@ -1,4 +1,3 @@
-#!/opt/conda/envs/dsenv/bin/python
 import os
 import sys
 import logging
@@ -32,8 +31,6 @@ logging.info(f"TRAIN_PATH {train_path}")
 logging.info(f"MODEL_PARAM1 {model_param1}")
 
 # Read dataset
-
-
 # Define features and target
 numeric_features = ["if"+str(i) for i in range(1, 14)]
 categorical_features = ["cf"+str(i) for i in range(1, 27)]
