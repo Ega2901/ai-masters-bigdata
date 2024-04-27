@@ -31,6 +31,8 @@ logging.info(f"TRAIN_PATH {train_path}")
 logging.info(f"MODEL_PARAM1 {model_param1}")
 
 # Read dataset
+
+
 # Define features and target
 numeric_features = ["if"+str(i) for i in range(1, 14)]
 categorical_features = ["cf"+str(i) for i in range(1, 27)]
@@ -50,7 +52,7 @@ numeric_transformer = Pipeline(steps=[
 
 categorical_transformer = Pipeline(steps=[
     ('imputer', SimpleImputer(missing_values=pd.NA, strategy='constant', fill_value='miss')),
-    ('onehot', OneHotEncoder(drop='first'))
+    ('onehot', OneHotEncoder(drop='first', handle_unknown='ignore'))
 ])
 
 preprocessor = ColumnTransformer(
