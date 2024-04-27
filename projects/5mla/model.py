@@ -9,7 +9,7 @@ import pandas as pd
 
 # Определение списка признаков
 numeric_features = ["if"+str(i) for i in range(1, 13)]
-categorical_features = ["cf"+str(i) for i in range(1, 24)]
+categorical_features = ["cf"+str(i) for i in range(14, 39)]
 fields = ["id", "label"] + numeric_features + categorical_features
 
 # Определение опций чтения данных
