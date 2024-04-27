@@ -1,9 +1,9 @@
 #!/opt/conda/envs/dsenv/bin/python
-import os, sys
+import os
+import sys
 import logging
 import mlflow
 import mlflow.sklearn
-
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from joblib import dump
