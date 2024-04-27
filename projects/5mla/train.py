@@ -50,9 +50,6 @@ with mlflow.start_run() as run:
     # Train the model
     model.fit(X_train, y_train)
     
-    # Log model
-    mlflow.sklearn.log_model(model, "model")
-    
     # Evaluate model
     model_score = model.score(X_test, y_test)
     
