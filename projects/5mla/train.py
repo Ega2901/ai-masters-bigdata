@@ -19,13 +19,12 @@ logging.info("SCRIPT CALLED AS {}".format(sys.argv[0]))
 logging.info("ARGS {}".format(sys.argv[1:]))
 
 # Read script arguments
-try:
-    train_path = sys.argv[1]
-    model_param1 = float(sys.argv[2]) if len(sys.argv) > 3 else None
-except:
-    logging.critical("Need to pass project_id, train dataset path, and model_param1")
+if len(sys.argv) < 3:
+    logging.critical("Need to pass train dataset path and model_param1")
     sys.exit(1)
 
+train_path = sys.argv[1]
+model_param1 = float(sys.argv[2])
 logging.info(f"TRAIN_PATH {train_path}")
 logging.info(f"MODEL_PARAM1 {model_param1}")
 
@@ -41,10 +40,6 @@ X_train, X_test, y_train, y_test = train_test_split(
 # Log parameters
 mlflow.log_param("model_param1", model_param1)
 
-# End current run, if exists
-if mlflow.active_run():
-    mlflow.end_run()
-
 # Start MLflow run
 with mlflow.start_run() as run:
     # Train the model
@@ -59,7 +54,7 @@ with mlflow.start_run() as run:
     logging.info(f"model score: {model_score:.3f}")
 
     # Save the model
-    model_output_path = "{}.joblib".format('.')
+    model_output_path = "model.joblib"
     dump(model, model_output_path)
 
     # Log model output
