@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 from joblib import dump
 
 # Import model definition
-from model import model, fields
+from model import model
 
 # Logging initialization
 logging.basicConfig(level=logging.DEBUG)
@@ -29,6 +29,11 @@ logging.info(f"TRAIN_PATH {train_path}")
 logging.info(f"MODEL_PARAM1 {model_param1}")
 
 # Read dataset
+numeric_features = ["if"+str(i) for i in range(1, 14)]
+categorical_features = ["cf"+str(i) for i in range(1, 27)]
+fields = ["id", "label"] + numeric_features + categorical_features
+
+# Определение опций чтения данных
 read_table_opts = dict(sep="\t", names=fields, index_col=False)
 df = pd.read_table(train_path, **read_table_opts)
 
