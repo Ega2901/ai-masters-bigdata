@@ -40,6 +40,10 @@ X_train, X_test, y_train, y_test = train_test_split(
 # Log parameters
 mlflow.log_param("model_param1", model_param1)
 
+# End current run, if exists
+if mlflow.active_run():
+    mlflow.end_run()
+
 # Start MLflow run
 with mlflow.start_run() as run:
     # Train the model
