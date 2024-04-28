@@ -92,7 +92,7 @@ with mlflow.start_run() as run:
     logging.info(f"log loss: {loss:.3f}")
 
     # Save the model
-    model_output_path = "model.joblib"
+    model_output_path = "MLmodel"
     dump(model, model_output_path)
 
     # Log model output
