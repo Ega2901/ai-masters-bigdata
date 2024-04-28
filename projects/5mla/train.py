@@ -1,12 +1,12 @@
-from sklearn.linear_model import LogisticRegression
 import os
 import sys
 import logging
 import mlflow
 import mlflow.sklearn
-from mlflow.models.signature import infer_signature
+from mlflow.models import infer_signature
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
@@ -31,11 +31,11 @@ logging.info(f"TRAIN_PATH {train_path}")
 logging.info(f"MODEL_PARAM1 {model_param1}")
 
 # Read dataset
-
-# Define features and target
-numeric_features = ["if"+str(i) for i in range(1, 14)]
-categorical_features = ["cf"+str(i) for i in range(1, 27)]
-fields = ["id", "label"] + numeric_features + categorical_features
+fields = ["id", "label"] + ["if" + str(i) for i in range(1, 14)] + ["cf" + str(i) for i in range(1, 27)]
+read_table_opts = dict(sep="\t", names=fields, index_col=False)
+df = pd.read_csv(train_path, **read_table_opts)
+X = df.drop(columns=['label'])
+y = df['label']
 
 # Define preprocessing pipeline
 numeric_transformer = Pipeline(steps=[
@@ -50,20 +50,14 @@ categorical_transformer = Pipeline(steps=[
 
 preprocessor = ColumnTransformer(
     transformers=[
-        ('num', numeric_transformer, numeric_features),
-        ('cat', categorical_transformer, categorical_features)
+        ('num', numeric_transformer, [col for col in X.columns if col.startswith('if')]),
+        ('cat', categorical_transformer, [col for col in X.columns if col.startswith('cf')])
     ])
 
 lr = Pipeline(steps=[
     ('preprocessor', preprocessor),
     ('classifier', LogisticRegression(penalty='l2', max_iter=1000, random_state=8888))
 ])
-
-# Read dataset
-read_table_opts = dict(sep="\t", names=fields, index_col=False)
-df = pd.read_csv(train_path, **read_table_opts)
-X = df.drop(columns=['label'])
-y = df['label']
 
 # Split train/test
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -82,13 +76,13 @@ if mlflow.active_run():
 # Start MLflow run
 with mlflow.start_run():
     # Log the hyperparameters
-    mlflow.log_params({"penalty": "l2", "max_iter": 1000, "random_state": 8888})
+    mlflow.log_params({"penalty": "l2", "max_iter": 1000, "random_state": 8888, "model_param1": model_param1})
 
     # Log the loss metric
-    mlflow.log_metric("accuracy", loss)
+    mlflow.log_metric("log_loss", loss)
 
     # Set a tag that we can use to remind ourselves what this run was for
-    mlflow.set_tag("Training Info", "Basic LR model for iris data")
+    mlflow.set_tag("Training Info", "Basic LR model")
 
     # Infer the model signature
     signature = infer_signature(X_train, lr.predict(X_train))
