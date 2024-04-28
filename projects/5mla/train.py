@@ -61,6 +61,7 @@ preprocessor = ColumnTransformer(
         ('cat', categorical_transformer, categorical_features)
     ])
 params = {
+    "penalty": "l2",
     "max_iter": 1000,
     "random_state": 8888,
 }
