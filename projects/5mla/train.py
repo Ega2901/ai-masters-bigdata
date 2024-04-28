@@ -1,12 +1,12 @@
+from sklearn.linear_model import LogisticRegression
 import os
 import sys
 import logging
 import mlflow
 import mlflow.sklearn
-from mlflow.models import infer_signature
+from mlflow.models.signature import infer_signature
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
@@ -32,17 +32,10 @@ logging.info(f"MODEL_PARAM1 {model_param1}")
 
 # Read dataset
 
-
 # Define features and target
 numeric_features = ["if"+str(i) for i in range(1, 14)]
 categorical_features = ["cf"+str(i) for i in range(1, 27)]
 fields = ["id", "label"] + numeric_features + categorical_features
-
-# Определение опций чтения данных
-read_table_opts = dict(sep="\t", names=fields, index_col=False)
-df = pd.read_csv(train_path, **read_table_opts) # Assuming CSV format, you may need to adjust this based on your actual dataset format
-X = df.drop(columns=['label'])
-y = df['label']
 
 # Define preprocessing pipeline
 numeric_transformer = Pipeline(steps=[
@@ -60,17 +53,22 @@ preprocessor = ColumnTransformer(
         ('num', numeric_transformer, numeric_features),
         ('cat', categorical_transformer, categorical_features)
     ])
-params = {
-    "penalty": "l2",
-    "max_iter": 1000,
-    "random_state": 8888,
-}
+
 lr = Pipeline(steps=[
     ('preprocessor', preprocessor),
-    ('classifier', LogisticRegression(params))
+    ('classifier', LogisticRegression(penalty='l2', max_iter=1000, random_state=8888))
 ])
+
+# Read dataset
+read_table_opts = dict(sep="\t", names=fields, index_col=False)
+df = pd.read_csv(train_path, **read_table_opts)
+X = df.drop(columns=['label'])
+y = df['label']
+
 # Split train/test
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Fit the model
 lr.fit(X_train, y_train)
 
 # Predict on the test set
@@ -84,7 +82,7 @@ if mlflow.active_run():
 # Start MLflow run
 with mlflow.start_run():
     # Log the hyperparameters
-    mlflow.log_params(params)
+    mlflow.log_params({"penalty": "l2", "max_iter": 1000, "random_state": 8888})
 
     # Log the loss metric
     mlflow.log_metric("accuracy", loss)
@@ -96,10 +94,9 @@ with mlflow.start_run():
     signature = infer_signature(X_train, lr.predict(X_train))
 
     # Log the model
-    model_info = mlflow.sklearn.log_model(
+    mlflow.sklearn.log_model(
         sk_model=lr,
         artifact_path="lr_model",
         signature=signature,
-        input_example=X_train,
-        registered_model_name="tracking-quickstart",
+        input_example=X_train
     )
