@@ -70,7 +70,7 @@ X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_
 lr.fit(X_train, y_train)
 
 # Predict on the test set
-y_pred = model.predict_proba(X_test)
+y_pred = lr.predict_proba(X_test)
 loss = log_loss(y_test, y_pred)
 
 # Log parameters
