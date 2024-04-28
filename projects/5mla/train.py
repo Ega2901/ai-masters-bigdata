@@ -60,10 +60,14 @@ preprocessor = ColumnTransformer(
         ('num', numeric_transformer, numeric_features),
         ('cat', categorical_transformer, categorical_features)
     ])
-
+params = {
+    "solver": "lbfgs",
+    "max_iter": 1000,
+    "random_state": 8888,
+}
 lr = Pipeline(steps=[
     ('preprocessor', preprocessor),
-    ('classifier', LogisticRegression())
+    ('classifier', LogisticRegression(params))
 ])
 # Split train/test
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
@@ -80,7 +84,7 @@ if mlflow.active_run():
 # Start MLflow run
 with mlflow.start_run():
     # Log the hyperparameters
-    mlflow.log_params(model_param1)
+    mlflow.log_params(params)
 
     # Log the loss metric
     mlflow.log_metric("accuracy", loss)
