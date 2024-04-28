@@ -73,9 +73,6 @@ lr.fit(X_train, y_train)
 y_pred = lr.predict_proba(X_test)
 loss = log_loss(y_test, y_pred)
 
-# Log parameters
-mlflow.log_param("model_param1", model_param1)
-
 # End current run, if exists
 if mlflow.active_run():
     mlflow.end_run()
@@ -83,7 +80,7 @@ if mlflow.active_run():
 # Start MLflow run
 with mlflow.start_run():
     # Log the hyperparameters
-    mlflow.log_params(params)
+    mlflow.log_params(model_param1)
 
     # Log the loss metric
     mlflow.log_metric("accuracy", loss)
