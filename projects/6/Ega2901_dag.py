@@ -20,7 +20,7 @@ with DAG(
 ) as dag:
     feature_eng_task = BashOperator(
         task_id='feature_eng_task',
-        bash_command=f'python3 filter.py /datasets/amazon/amazon_extrasmall_train.json Ega2901_train_out && python3 {base_dir}filter.py /datasets/amazon/amazon_extrasmall_test.json Ega2901_test_out',
+        bash_command=f'python3 filter.py /datasets/amazon/amazon_extrasmall_train.json Ega2901_train_out && python3 filter.py /datasets/amazon/amazon_extrasmall_test.json Ega2901_test_out',
         dag=dag
     )
 
