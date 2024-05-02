@@ -46,4 +46,4 @@ with DAG(
         bash_command= f'python3 Ega2901_test_out Ega2901_hw6_prediction {base_dir}/6.joblib',
     )
 
-    feature_eng_train_task >> download_train_task >> train_task >> model_sensor >> predict_task
+    feature_eng_task >> download_train_task >> train_task >> model_sensor >> predict_task
