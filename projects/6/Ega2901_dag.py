@@ -20,7 +20,7 @@ with DAG(
 ) as dag:
     feature_eng_task = BashOperator(
         task_id='feature_eng_task',
-        bash_command=f'{pyspark_python} /datasets/amazon/amazon_extrasmall_train.json {base_dir}/Ega2901_train_out',       
+        bash_command=f'{pyspark_python} {base_dir}/filter.py /datasets/amazon/amazon_extrasmall_train.json {base_dir}/Ega2901_train_out',       
     ) 
 
     download_train_task = BashOperator(
@@ -41,7 +41,7 @@ with DAG(
     )
     feature_eng_test_task = BashOperator(
         task_id='feature_eng_test_task',
-        bash_command=f'{pyspark_python} /datasets/amazon/amazon_extrasmall_test.json {base_dir}/Ega2901_test_out',
+        bash_command=f'{pyspark_python} {base_dir}/filter.py /datasets/amazon/amazon_extrasmall_test.json {base_dir}/Ega2901_test_out',
         )
 
     download_test_task = BashOperator(
