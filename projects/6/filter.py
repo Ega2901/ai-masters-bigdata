@@ -23,7 +23,7 @@ from pyspark.ml.feature import VectorAssembler
 def filter_df(df):
     
     dataset = df.select('id', 'label', 'reviewText')
-    dataset = dataset.na.fill({'overall': 0, 'reviewText': 'unknown'})
+    dataset = dataset.na.fill({'label': 0, 'reviewText': 'unknown'})
 
     tokenizer = Tokenizer(inputCol = 'reviewText', outputCol = 'tokens')
     df2 = tokenizer.transform(dataset)
