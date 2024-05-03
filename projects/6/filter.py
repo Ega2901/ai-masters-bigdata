@@ -8,7 +8,7 @@ os.environ["PYSPARK_DRIVER_PYTHON"]= PYSPARK_PYTHON
 os.environ["SPARK_HOME"] = SPARK_HOME
 PYSPARK_HOME = os.path.join(SPARK_HOME, "python/lib")
 sys.path.insert(0, os.path.join(PYSPARK_HOME, "py4j-0.10.9.5-src.zip"))
-sys.path.insert(0, os.path.join(PYSPARK_HOME, "pyspark.zip")
+sys.path.insert(0, os.path.join(PYSPARK_HOME, "pyspark.zip"))
 from pyspark import SparkContext, SparkConf
 from pyspark.sql import SparkSession
 conf = SparkConf()
