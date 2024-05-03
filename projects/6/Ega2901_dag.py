@@ -22,7 +22,7 @@ with DAG(
         task_id='feature_eng_task',
         application=f'{base_dir}/filter.py',
         spark_binary='/usr/bin/spark3-submit',
-        application_args=[f'{base_dir}/datasets/amazon/amazon_extrasmall_train.json', f'{base_dir}/Ega2901_train_out']
+        application_args=[f'{base_dir}/datasets/amazon/amazon_extrasmall_train.json', f'{base_dir}/Ega2901_train_out'],
         conf={'PYSPARK_PYTHON':pyspark_python}
      ) 
 
@@ -46,9 +46,9 @@ with DAG(
         task_id='feature_eng_test_task',
         application=f'{base_dir}/filter.py',
         spark_binary='/usr/bin/spark3-submit',
-        application_args=[f'{base_dir}/datasets/amazon/amazon_extrasmall_test.json', f'{base_dir}/Ega2901_test_out']
+        application_args=[f'{base_dir}/datasets/amazon/amazon_extrasmall_test.json', f'{base_dir}/Ega2901_test_out'],
         conf={'PYSPARK_PYTHON':pyspark_python}
-     ) 
+     )
 
     download_test_task = BashOperator(
         task_id='download_test_task',
