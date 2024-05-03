@@ -27,8 +27,8 @@ if __name__ == "__main__":
     out_path = str(sys.argv[2])
     df = spark.read.json(input_path)
     
-    X = np.array(transformed_df.select("rawFeatures").collect())
-    y = np.array(transformed_df.select("label").collect())
+    X = np.array(df.select("rawFeatures").collect())
+    y = np.array(df.select("label").collect())
     model = LogisticRegression(max_iter=1000)
     model.fit(X, y)
     dump(model, out_path)
