@@ -41,21 +41,21 @@ with DAG(
         timeout=600,
     )
 
-    feature_eng_task_test = BashOperator(
-        task_id='feature_eng_task_test',
+    feature_eng_test_task = BashOperator(
+        task_id='feature_eng_test_task',
         bash_command=f'python {base_dir}/filter.py {base_dir}/datasets/amazon/amazon_extrasmall_test.json {base_dir}/Ega2901_test_out',
         dag=dag
     )
 
     download_test_task = BashOperator(
-        task_id='download_train_task',
+        task_id='download_test_task',
         bash_command=f'hdfs dfs -get {base_dir}/Ega2901_test_out {base_dir}/Ega2901_test_out_local',
     )
 
 
     predict_task = BashOperator(
         task_id='predict_task',
-        bash_command= f'python3 {base_dir}/Ega2901_test_out_local {base_dir}/Ega2901_hw6_prediction {base_dir}/6.joblib',
+        bash_command= f'python {base_dir}/Ega2901_test_out_local {base_dir}/Ega2901_hw6_prediction {base_dir}/6.joblib',
     )
 
-    feature_eng_task >> download_train_task >> train_task >> model_sensor >> feature_eng_task_test >> download_test_task >> predict_task
+    feature_eng_task >> download_train_task >> train_task >> model_sensor >> feature_eng_test_task >> download_test_task >> predict_task
