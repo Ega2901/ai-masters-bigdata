@@ -20,7 +20,7 @@ with DAG(
 ) as dag:
     feature_eng_task = BashOperator(
         task_id='feature_eng_task',
-        bash_command=f'python {base_dir}/filter.py {base_dir}/datasets/amazon/amazon_extrasmall_train.json {base_dir}/Ega2901_train_out',
+        bash_command=f'{pyspark_python} {base_dir}/filter.py {base_dir}/datasets/amazon/amazon_extrasmall_train.json {base_dir}/Ega2901_train_out',
         dag=dag
     )
 
@@ -31,7 +31,7 @@ with DAG(
 
     train_task = BashOperator(
         task_id='train_task',
-        bash_command=f'python {base_dir}/model.py {base_dir}/Ega2901_train_out_local {base_dir}/6.joblib',
+        bash_command=f'{pyspark_python} {base_dir}/model.py {base_dir}/Ega2901_train_out_local {base_dir}/6.joblib',
     )
 
     model_sensor = FileSensor(
@@ -43,7 +43,7 @@ with DAG(
 
     feature_eng_test_task = BashOperator(
         task_id='feature_eng_test_task',
-        bash_command=f'python {base_dir}/filter.py {base_dir}/datasets/amazon/amazon_extrasmall_test.json {base_dir}/Ega2901_test_out',
+        bash_command=f'{pyspark_python} {base_dir}/filter.py {base_dir}/datasets/amazon/amazon_extrasmall_test.json {base_dir}/Ega2901_test_out',
         dag=dag
     )
 
@@ -55,7 +55,7 @@ with DAG(
 
     predict_task = BashOperator(
         task_id='predict_task',
-        bash_command= f'python {base_dir}/Ega2901_test_out_local {base_dir}/Ega2901_hw6_prediction {base_dir}/6.joblib',
+        bash_command= f'{pyspark_python} {base_dir}/Ega2901_test_out_local {base_dir}/Ega2901_hw6_prediction {base_dir}/6.joblib',
     )
 
     feature_eng_task >> download_train_task >> train_task >> model_sensor >> feature_eng_test_task >> download_test_task >> predict_task
