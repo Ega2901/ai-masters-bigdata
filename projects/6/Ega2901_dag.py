@@ -2,7 +2,7 @@ from datetime import datetime
 from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.sensors.filesystem import FileSensor
-from airflow.providers.apache.spark.operators.spark_submit import SparkSubmitOperator
+from airflow.contrib.operators.spark_submit_operator import SparkSubmitOperator
 
 base_dir = '{{ dag_run.conf["base_dir"] if dag_run else "" }}'
 pyspark_python = "/opt/conda/envs/dsenv/bin/python"
@@ -18,11 +18,13 @@ with DAG(
         """,
         tags=["example"],
 ) as dag:
-    feature_eng_task = BashOperator(
+    feature_eng_task = SparkSubmitOperator(
         task_id='feature_eng_task',
-        bash_command=f'{pyspark_python} {base_dir}/filter.py {base_dir}/datasets/amazon/amazon_extrasmall_train.json {base_dir}/Ega2901_train_out',
-        dag=dag
-    )
+        application=f'{base_dir}/filter.py',
+        spark_binary='/usr/bin/spark3-submit',
+        application_args=[f'{base_dir}/datasets/amazon/amazon_extrasmall_train.json', f'{base_dir}/Ega2901_train_out']
+        conf={'PYSPARK_PYTHON':pyspark_python}
+     ) 
 
     download_train_task = BashOperator(
         task_id='download_train_task',
@@ -40,12 +42,13 @@ with DAG(
         poke_interval=60,
         timeout=600,
     )
-
-    feature_eng_test_task = BashOperator(
+    feature_eng_test_task = SparkSubmitOperator(
         task_id='feature_eng_test_task',
-        bash_command=f'{pyspark_python} {base_dir}/filter.py {base_dir}/datasets/amazon/amazon_extrasmall_test.json {base_dir}/Ega2901_test_out',
-        dag=dag
-    )
+        application=f'{base_dir}/filter.py',
+        spark_binary='/usr/bin/spark3-submit',
+        application_args=[f'{base_dir}/datasets/amazon/amazon_extrasmall_test.json', f'{base_dir}/Ega2901_test_out']
+        conf={'PYSPARK_PYTHON':pyspark_python}
+     ) 
 
     download_test_task = BashOperator(
         task_id='download_test_task',
