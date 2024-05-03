@@ -40,7 +40,7 @@ if __name__ == "__main__":
     df = spark.read.json(input_path)
     df.cache()
     df2 = filter_df(df)
-    df2.write.csv(out_path)
+    df2.write(out_path)
     spark.catalog.clearCache()
     spark.stop()
 
