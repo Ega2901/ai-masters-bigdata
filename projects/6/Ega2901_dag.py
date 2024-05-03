@@ -18,13 +18,10 @@ with DAG(
         """,
         tags=["example"],
 ) as dag:
-    feature_eng_task = SparkSubmitOperator(
+    feature_eng_task = BashOperator(
         task_id='feature_eng_task',
-        application=f'{base_dir}/filter.py',
-        spark_binary='/usr/bin/spark3-submit',
-        application_args=[f'{base_dir}/datasets/amazon/amazon_extrasmall_train.json', f'{base_dir}/Ega2901_train_out'],
-        conf={'PYSPARK_PYTHON':pyspark_python}
-     ) 
+        bash_command=f'{pyspark_python} {base_dir}/datasets/amazon/amazon_extrasmall_train.json {base_dir}/Ega2901_train_out',       
+    ) 
 
     download_train_task = BashOperator(
         task_id='download_train_task',
@@ -42,13 +39,10 @@ with DAG(
         poke_interval=60,
         timeout=600,
     )
-    feature_eng_test_task = SparkSubmitOperator(
+    feature_eng_test_task = BashOperator(
         task_id='feature_eng_test_task',
-        application=f'{base_dir}/filter.py',
-        spark_binary='/usr/bin/spark3-submit',
-        application_args=[f'{base_dir}/datasets/amazon/amazon_extrasmall_test.json', f'{base_dir}/Ega2901_test_out'],
-        conf={'PYSPARK_PYTHON':pyspark_python}
-     )
+        bash_command=f'{pyspark_python} {base_dir}/datasets/amazon/amazon_extrasmall_test.json {base_dir}/Ega2901_test_out',
+        )
 
     download_test_task = BashOperator(
         task_id='download_test_task',
