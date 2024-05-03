@@ -20,18 +20,18 @@ with DAG(
 ) as dag:
     feature_eng_task = BashOperator(
         task_id='feature_eng_task',
-        bash_command=f'python3 filter.py /datasets/amazon/amazon_extrasmall_train.json Ega2901_train_out && python3 filter.py /datasets/amazon/amazon_extrasmall_test.json Ega2901_test_out',
+        bash_command=f'python {base_dir}/filter.py {base_dir}/datasets/amazon/amazon_extrasmall_train.json {base_dir}/Ega2901_train_out',
         dag=dag
     )
 
     download_train_task = BashOperator(
         task_id='download_train_task',
-        bash_command=f'hdfs dfs -get Ega2901_train_out {base_dir}/Ega2901_train_out_local',
+        bash_command=f'hdfs dfs -get {base_dir}/Ega2901_train_out {base_dir}/Ega2901_train_out_local',
     )
 
     train_task = BashOperator(
         task_id='train_task',
-        bash_command=f'python3 model.py {base_dir}/Ega2901_train_out_local {base_dir}/6.joblib',
+        bash_command=f'python {base_dir}/model.py {base_dir}/Ega2901_train_out_local {base_dir}/6.joblib',
     )
 
     model_sensor = FileSensor(
@@ -41,9 +41,21 @@ with DAG(
         timeout=600,
     )
 
-    predict_task = BashOperator(
-        task_id='predict_task',
-        bash_command= f'python3 Ega2901_test_out Ega2901_hw6_prediction {base_dir}/6.joblib',
+    feature_eng_task_test = BashOperator(
+        task_id='feature_eng_task_test',
+        bash_command=f'python {base_dir}/filter.py {base_dir}/datasets/amazon/amazon_extrasmall_test.json {base_dir}/Ega2901_test_out',
+        dag=dag
     )
 
-    feature_eng_task >> download_train_task >> train_task >> model_sensor >> predict_task
+    download_test_task = BashOperator(
+        task_id='download_train_task',
+        bash_command=f'hdfs dfs -get {base_dir}/Ega2901_test_out {base_dir}/Ega2901_test_out_local',
+    )
+
+
+    predict_task = BashOperator(
+        task_id='predict_task',
+        bash_command= f'python3 {base_dir}/Ega2901_test_out_local {base_dir}/Ega2901_hw6_prediction {base_dir}/6.joblib',
+    )
+
+    feature_eng_task >> download_train_task >> train_task >> model_sensor >> feature_eng_task_test >> download_test_task >> predict_task

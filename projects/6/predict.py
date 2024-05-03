@@ -1,6 +1,7 @@
 import os
 import sys
 import numpy as np
+#!/opt/conda/envs/dsenv/bin/python
 import pandas as pd 
 from sklearn.linear_model import LogisticRegression
 from joblib import load
