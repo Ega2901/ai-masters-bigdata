@@ -16,6 +16,8 @@ conf.set("spark.ui.port", "4099")
 spark = SparkSession.builder.config(conf=conf).appName("Spark SQL").getOrCreate()                
 from pyspark.sql.types import *
 import pyspark.sql.functions as f
+from sklearn.preprocessing import StandardScaler
+from pyspark.ml.feature import VectorAssembler
 import numpy as np
 import pandas as pd 
 from sklearn.linear_model import LogisticRegression
@@ -27,8 +29,15 @@ if __name__ == "__main__":
     out_path = str(sys.argv[2])
     df = spark.read.json(input_path)
     
-    X = np.array(df.select("rawFeatures").collect())
-    y = np.array(df.select("label").collect())
+    assembler = VectorAssembler(inputCols=["rawFeatures"], outputCol="features")
+    df = assembler.transform(df)
+    
+    scaler = StandardScaler(inputCol="features", outputCol="scaledFeatures", withStd=True, withMean=True)
+    scaler_model = scaler.fit(df)
+    df = scaler_model.transform(df)
+    
+    X = df.select("scaledFeatures").rdd.map(lambda x: x[0]).collect()
+    y = df.select("label").rdd.map(lambda x: x[0]).collect()
     model = LogisticRegression(max_iter=1000)
     model.fit(X, y)
     dump(model, out_path)
