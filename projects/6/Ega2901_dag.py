@@ -30,12 +30,12 @@ with DAG(
 
     train_task = BashOperator(
         task_id='train_task',
-        bash_command=f'{pyspark_python} {base_dir}/model.py {base_dir}/Ega2901_train_out_local {base_dir}/6.joblib',
+        bash_command=f'{pyspark_python} {base_dir}/model.py Ega2901_train_out_local {base_dir}/6.joblib',
     )
 
     model_sensor = FileSensor(
         task_id='model_sensor',
-        filepath=f'{base_dir}/6.joblib',
+        filepath=f'/6.joblib',
         poke_interval=60,
         timeout=600,
     )
