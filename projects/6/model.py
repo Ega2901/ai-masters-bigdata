@@ -28,9 +28,7 @@ if __name__ == "__main__":
     input_path = str(sys.argv[1])
     out_path = str(sys.argv[2])
     df = spark.read.json(input_path)
-    
-    assembler = VectorAssembler(inputCols=["rawFeatures"], outputCol="features")
-    df = assembler.transform(df)
+    df = df.withColumn("features", f.udf(lambda x: Vectors.sparse(x["size"], x["indices"], x["values"]), VectorUDT())(df["rawFeatures"]))
     
     scaler = StandardScaler(inputCol="features", outputCol="scaledFeatures", withStd=True, withMean=True)
     scaler_model = scaler.fit(df)
@@ -38,6 +36,7 @@ if __name__ == "__main__":
     
     X = df.select("scaledFeatures").rdd.map(lambda x: x[0]).collect()
     y = df.select("label").rdd.map(lambda x: x[0]).collect()
+
     model = LogisticRegression(max_iter=1000)
     model.fit(X, y)
     dump(model, out_path)
