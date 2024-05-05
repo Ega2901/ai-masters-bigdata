@@ -1,7 +1,6 @@
 #!/opt/conda/envs/dsenv/bin/python
 import os
 import sys
-from pyspark.ml.feature import VectorAssembler
 import numpy as np
 import pandas as pd 
 from sklearn.linear_model import LogisticRegression
