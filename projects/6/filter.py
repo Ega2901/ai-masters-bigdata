@@ -19,6 +19,7 @@ import pyspark.sql.functions as f
 from pyspark.ml.feature import HashingTF, Tokenizer
 from pyspark.ml import Pipeline
 from pyspark.ml.feature import VectorAssembler
+import pandas as pd
 
 
 def filter_df(df):
@@ -39,7 +40,8 @@ if __name__ == "__main__":
     df = spark.read.json(input_path)
     df.cache()
     df2 = filter_df(df)
-    df2.write.mode("append").save(out_path)
+    pandas_df = df2.select(['label', 'rawFeatures']).toPandas()
+    pandas_df.to_csv(out_path)
     spark.catalog.clearCache()
     spark.stop()
 
