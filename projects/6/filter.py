@@ -41,7 +41,7 @@ if __name__ == "__main__":
     df.cache()
     df2 = filter_df(df)
     pandas_df = df2.select(['label', 'rawFeatures']).toPandas()
-    pandas_df.to_csv(out_path)
+    pandas_df.to_csv(f'{out_path}/train.csv')
     spark.catalog.clearCache()
     spark.stop()
 

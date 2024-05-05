@@ -25,12 +25,12 @@ with DAG(
 
     download_train_task = BashOperator(
         task_id='download_train_task',
-        bash_command=f'hdfs dfs -get Ega2901_train_out {base_dir}/Ega2901_train_out_local.csv',
+        bash_command=f'hdfs dfs -get Ega2901_train_out {base_dir}/Ega2901_train_out_local',
     )
 
     train_task = BashOperator(
         task_id='train_task',
-        bash_command=f'{pyspark_python} {base_dir}/model.py {base_dir}/Ega2901_train_out_local.csv {base_dir}/6.joblib',
+        bash_command=f'{pyspark_python} {base_dir}/model.py {base_dir}/Ega2901_train_out_local {base_dir}/6.joblib',
     )
 
     model_sensor = FileSensor(
