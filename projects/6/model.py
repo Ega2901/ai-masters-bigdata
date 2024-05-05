@@ -33,8 +33,10 @@ if __name__ == "__main__":
     def to_pandas_udf(v):
         return v.tolist()
 
-    X = df.withColumn('rawFeatures', to_pandas_udf(df['rawFeatures']))
-    y = df.withColumn('label', to_pandas_udf(df['rawFeatures']))
+    assembler = VectorAssembler(inputCols=["rawFeatures"], outputCol="features")
+    df2 = assembler.transform(df)
+    X = df2.withColumn('features', to_pandas_udf(df2['features']))
+    y = df.withColumn('label', to_pandas_udf(df['label']))
     model = LogisticRegression(max_iter=1000)
     model.fit(X, y)
     dump(model, out_path)
