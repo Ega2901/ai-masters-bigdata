@@ -41,18 +41,18 @@ with DAG(
     )
     feature_eng_test_task = BashOperator(
         task_id='feature_eng_test_task',
-        bash_command=f'{pyspark_python} {base_dir}/filter.py /datasets/amazon/amazon_extrasmall_test.json {base_dir}/Ega2901_test_out',
+        bash_command=f'{pyspark_python} {base_dir}/filter.py /datasets/amazon/amazon_extrasmall_test.json Ega2901_test_out',
         )
 
     download_test_task = BashOperator(
         task_id='download_test_task',
-        bash_command=f'hdfs dfs -get {base_dir}/Ega2901_test_out {base_dir}/Ega2901_test_out_local',
+        bash_command=f'hdfs dfs -get Ega2901_test_out {base_dir}/Ega2901_test_out_local',
     )
 
 
     predict_task = BashOperator(
         task_id='predict_task',
-        bash_command= f'{pyspark_python} {base_dir}/Ega2901_test_out_local {base_dir}/Ega2901_hw6_prediction {base_dir}/6.joblib',
+        bash_command= f'{pyspark_python} {base_dir}/predict.py Ega2901_test_out {base_dir}/Ega2901_hw6_prediction {base_dir}/6.joblib',
     )
 
     feature_eng_task >> download_train_task >> train_task >> model_sensor >> feature_eng_test_task >> download_test_task >> predict_task

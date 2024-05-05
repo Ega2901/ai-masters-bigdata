@@ -29,14 +29,9 @@ if __name__ == "__main__":
     input_path = str(sys.argv[1])
     out_path = str(sys.argv[2])
     df = spark.read.json(input_path)
-    @pandas_udf(ArrayType(FloatType()), PandasUDFType.SCALAR)
-    def to_pandas_udf(v):
-        return v.tolist()
-
-    assembler = VectorAssembler(inputCols=["rawFeatures"], outputCol="features")
-    df2 = assembler.transform(df)
-    X = df2.withColumn('features', to_pandas_udf(df2['features']))
-    y = df.withColumn('label', to_pandas_udf(df['label']))
+    train_df = df.select(['label', 'rawFeatures']).toPandas()
+    X = train_df["rawFeatures"].tolist()
+    y = train_df["label"]
     model = LogisticRegression(max_iter=1000)
     model.fit(X, y)
     dump(model, out_path)
