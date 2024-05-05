@@ -21,6 +21,7 @@ from pyspark.ml.feature import VectorAssembler
 import numpy as np
 import pandas as pd 
 from sklearn.linear_model import LogisticRegression
+from pyspark.sql.functions import pandas_udf, PandasUDFType
 from joblib import dump, load
 
 
@@ -28,15 +29,12 @@ if __name__ == "__main__":
     input_path = str(sys.argv[1])
     out_path = str(sys.argv[2])
     df = spark.read.json(input_path)
-    df = df.withColumn("features", f.udf(lambda x: Vectors.sparse(x["size"], x["indices"], x["values"]), VectorUDT())(df["rawFeatures"]))
-    
-    scaler = StandardScaler(inputCol="features", outputCol="scaledFeatures", withStd=True, withMean=True)
-    scaler_model = scaler.fit(df)
-    df = scaler_model.transform(df)
-    
-    X = df.select("scaledFeatures").rdd.map(lambda x: x[0]).collect()
-    y = df.select("label").rdd.map(lambda x: x[0]).collect()
+    @pandas_udf(ArrayType(FloatType()), PandasUDFType.SCALAR)
+    def to_pandas_udf(v):
+        return v.tolist()
 
+    X = df.withColumn('rawFeatures', to_pandas_udf(df['rawFeatures']))
+    y = df.withColumn('label', to_pandas_udf(df['rawFeatures']))
     model = LogisticRegression(max_iter=1000)
     model.fit(X, y)
     dump(model, out_path)
