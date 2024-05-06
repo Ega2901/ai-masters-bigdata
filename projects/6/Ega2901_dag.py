@@ -19,12 +19,12 @@ with DAG(
 ) as dag:
     feature_eng_task = BashOperator(
         task_id='feature_eng_task',
-        bash_command=f'{pyspark_python} {base_dir}/filter.py /datasets/amazon/amazon_extrasmall_train.json {base_dir}/Ega2901_train_out',       
+        bash_command=f'{pyspark_python} {base_dir}/filter.py /datasets/amazon/amazon_extrasmall_train.json Ega2901_train_out',       
     ) 
 
     download_train_task = BashOperator(
         task_id='download_train_task',
-        bash_command=f'hdfs dfs -get {base_dir}/Ega2901_train_out {base_dir}/Ega2901_train_out_local',
+        bash_command=f'hdfs dfs -get Ega2901_train_out {base_dir}/Ega2901_train_out_local',
     )
 
     train_task = BashOperator(
