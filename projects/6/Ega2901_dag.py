@@ -23,7 +23,7 @@ with DAG(
     )
     feature_echo = BashOperator(
         task_id='feature_echo',
-        bash_command=f'echo {base_dir}/Ega2901_train_out_local',       
+        bash_command=f'ls -laht',       
     )   
 
     download_train_task = BashOperator(
