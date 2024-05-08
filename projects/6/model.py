@@ -9,6 +9,9 @@ from joblib import dump, load
 if __name__ == "__main__":
     input_path = str(sys.argv[1])
     out_path = str(sys.argv[2])
+    print(f'CURRENT PATH')
+    print(input_path)
+    print(out_path)
     df = pd.read_csv(f'{input_path}')
     X = df["rawFeatures"].tolist()
     y = df["label"]
