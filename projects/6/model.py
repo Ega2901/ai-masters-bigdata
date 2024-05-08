@@ -10,8 +10,11 @@ if __name__ == "__main__":
     print('CURRENT PATH')
     print(sys.argv)
     input_path = str(sys.argv[1])
+    with open(input_path, 'r') as file:
+        for line in flie:
+            print(line)
     out_path = str(sys.argv[2])
-    df = pd.read_csv(f'{input_path}')
+    df = pd.read_csv(sys.argv[1])
     X = df["rawFeatures"].tolist()
     y = df["label"]
     model = LogisticRegression(max_iter=1000)
