@@ -23,7 +23,7 @@ with DAG(
     )
     feature_echo = BashOperator(
         task_id='feature_echo',
-        bash_command=f'ls -laht {base_dir}/ai-masters-bigdata/projects/6/',       
+        bash_command=f'ls -laht {base_dir}',       
     )   
 
     download_train_task = BashOperator(
