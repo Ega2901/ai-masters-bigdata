@@ -10,8 +10,8 @@ if __name__ == "__main__":
     print('CURRENT PATH')
     print(sys.argv)
     input_path = str(sys.argv[1])
-    with open(input_path, 'r') as file:
-        for line in flie:
+    with open(sys.argv[1], 'r') as file:
+        for line in file:
             print(line)
     out_path = str(sys.argv[2])
     df = pd.read_csv(sys.argv[1])
