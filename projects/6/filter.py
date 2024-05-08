@@ -41,6 +41,7 @@ if __name__ == "__main__":
     df.cache()
     df2 = filter_df(df)
     pandas_df = df2.select(['label', 'rawFeatures']).toPandas()
+    print('OUTPATHHHHHHHHH',out_path)
     pandas_df.to_csv(f'{out_path}')
     spark.catalog.clearCache()
     spark.stop()
