@@ -1,3 +1,9 @@
 #!/bin/bash
-cd ai-masters-bigdata
-projects/1a/train.sh 1a /home/users/datasets/criteo/train1000.txt
+
+# Параметры
+project_number=$1
+training_file_path=$2
+
+# Запуск скрипта обучения
+python3 projects/1a/train.py $project_number $training_file_path
+
