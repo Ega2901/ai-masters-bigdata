@@ -12,7 +12,7 @@ def main(project_number, training_file_path):
     
     model.fit(X, y)
     
-    dump(model, f"{project_number}.joblib")
+    dump(model, "1a.joblib")
 
 if __name__ == "__main__":
     project_number = sys.argv[1]
