@@ -1,3 +1,4 @@
+#!/opt/conda/envs/dsenv/bin/python
 import os
 import sys
 SPARK_HOME = "/usr/lib/spark3"
