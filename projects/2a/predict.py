@@ -4,14 +4,10 @@ import sys, os
 import logging
 from joblib import load
 import pandas as pd
-
-numeric_features = ["if"+str(i) for i in range(1,14)]
-categorical_features = ["cf"+str(i) for i in range(1,27)]
-
-# fields = ["id", "label"] + numeric_features + categorical_features
-fields_without_category = ["id"] + numeric_features
+import numpy as np
 
 sys.path.append('.')
+# from model import fields_no_label
 
 #
 # Init the logger
@@ -24,12 +20,18 @@ logging.info("ARGS {}".format(sys.argv[1:]))
 #load the model
 model = load("2a.joblib")
 
-read_opts=dict(
-        sep='\t', names=fields, index_col=0, header=None,
-        iterator=True, chunksize=100
-)
+numeric_features = ["if"+str(i) for i in range(1,14)]
+categorical_features = ["cf"+str(i) for i in range(1,27)]
+fields = ["id", "label"] + numeric_features + categorical_features
+fields_no_label = ["id"] + numeric_features + categorical_features
+
+read_opts=dict(sep='\t', names=fields_no_label, index_col=False, header=None, iterator=True, chunksize=100)
 
 for df in pd.read_csv(sys.stdin, **read_opts):
-    pred = model.predict_proba(df.iloc[:,:13])
-    out = zip(df.index, pred[:, 1])
+    df.iloc[:, :14] = df.iloc[:, :14].replace('\\N', 0)
+    df.iloc[:, :14] = df.iloc[:, :14].replace('', 0)
+    df.iloc[:, 14:] = df.iloc[:, 14:].replace('\\N', '')
+    X=df.drop(df.columns[[0]], axis=1)
+    pred = model.predict_proba(X)
+    out = zip(df.id, pred[:,0])
     print("\n".join(["{0}\t{1}".format(*i) for i in out]))
