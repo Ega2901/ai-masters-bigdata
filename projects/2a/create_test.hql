@@ -39,4 +39,8 @@ hw2_test(
  cf23 string,
  cf24 string,
  cf25 string,
- cf26 string) ROW FORMAT DELIMITED FIELDS TERMINATED BY '\t' STORED AS TEXTFILE LOCATION '/datasets/criteo/criteo_test_large_features';
+ cf26 string) 
+ROW FORMAT DELIMITED 
+FIELDS TERMINATED BY '\t' 
+STORED AS TEXTFILE 
+LOCATION '/datasets/criteo/testdir';
