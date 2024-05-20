@@ -1,3 +1,4 @@
-INSERT OVERWRITE DIRECTORY 'Ega2901_hiveout' 
-row format delimited fields terminated by '\t'
-select * from hw2_pred;
+INSERT OVERWRITE DIRECTORY 'SergKudahev_hiveout'
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY '\t'
+SELECT * FROM hw2_pred;
