@@ -1,4 +1,5 @@
 from pyspark.sql.types import *
+from pyspark.sql import DataFrame
 from pyspark.sql.functions import col, lit, when
 from pyspark.ml.feature import HashingTF, Tokenizer
 from pyspark.ml import Pipeline, Transformer
