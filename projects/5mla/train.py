@@ -1,96 +1,77 @@
+#!/opt/conda/envs/dsenv/bin/python
+
 import os
 import sys
 import logging
-import mlflow
-import mlflow.sklearn
-from mlflow.models import infer_signature
 import pandas as pd
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import Pipeline
-from sklearn.compose import ColumnTransformer
-from sklearn.impute import SimpleImputer
-from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.metrics import log_loss
 from joblib import dump
+import mlflow
+import mlflow.sklearn
 
+#
+# Import model definition
+#
+from model import model, fields
+
+#
 # Logging initialization
+#
 logging.basicConfig(level=logging.DEBUG)
 logging.info("CURRENT_DIR {}".format(os.getcwd()))
 logging.info("SCRIPT CALLED AS {}".format(sys.argv[0]))
 logging.info("ARGS {}".format(sys.argv[1:]))
 
+#
 # Read script arguments
-if len(sys.argv) < 3:
-    logging.critical("Need to pass train dataset path and model_param1")
+#
+try:
+    proj_id = sys.argv[1]
+    train_path = sys.argv[2]
+    model_param1 = int(sys.argv[3])  # Новый параметр для модели
+except:
+    logging.critical("Need to pass project_id, train dataset path, and model_param1")
     sys.exit(1)
 
-train_path = sys.argv[1]
-model_param1 = float(sys.argv[2])
+logging.info(f"TRAIN_ID {proj_id}")
 logging.info(f"TRAIN_PATH {train_path}")
 logging.info(f"MODEL_PARAM1 {model_param1}")
 
+#
 # Read dataset
-fields = ["id", "label"] + ["if" + str(i) for i in range(1, 14)] + ["cf" + str(i) for i in range(1, 27)]
-read_table_opts = dict(sep="\t", names=fields, index_col=False)
-df = pd.read_csv(train_path, **read_table_opts)
-X = df.drop(columns=['label'])
-y = df['label']
+#
+read_table_opts = dict(sep="\t", names=fields, index_col=0)
+df = pd.read_table(train_path, **read_table_opts)
 
-# Define preprocessing pipeline
-numeric_transformer = Pipeline(steps=[
-    ('imputer', SimpleImputer(missing_values=pd.NA, strategy='median')),
-    ('scaler', StandardScaler())
-])
+# split train/test
+X_train, X_test, y_train, y_test = train_test_split(
+    df.iloc[:, 1:14], df.iloc[:, 0], test_size=0.33, random_state=42
+)
 
-categorical_transformer = Pipeline(steps=[
-    ('imputer', SimpleImputer(missing_values=pd.NA, strategy='constant', fill_value='miss')),
-    ('onehot', OneHotEncoder(drop='first', handle_unknown='ignore'))
-])
+#
+# Train the model
+#
+# Пример: использование model_param1 в модели (при необходимости)
+# model.set_params(param1=model_param1)
 
-preprocessor = ColumnTransformer(
-    transformers=[
-        ('num', numeric_transformer, [col for col in X.columns if col.startswith('if')]),
-        ('cat', categorical_transformer, [col for col in X.columns if col.startswith('cf')])
-    ])
-
-lr = Pipeline(steps=[
-    ('preprocessor', preprocessor),
-    ('classifier', LogisticRegression(penalty='l2', max_iter=1000, random_state=8888))
-])
-
-# Split train/test
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-# Fit the model
-lr.fit(X_train, y_train)
-
-# Predict on the test set
-y_pred = lr.predict_proba(X_test)
-loss = log_loss(y_test, y_pred)
-
-# End current run, if exists
-if mlflow.active_run():
-    mlflow.end_run()
-
-# Start MLflow run
 with mlflow.start_run():
-    # Log the hyperparameters
-    mlflow.log_params({"penalty": "l2", "max_iter": 1000, "random_state": 8888, "model_param1": model_param1})
+    # Логирование параметров
+    mlflow.log_param("train_path", train_path)
+    mlflow.log_param("model_param1", model_param1)
 
-    # Log the loss metric
-    mlflow.log_metric("log_loss", loss)
+    model.fit(X_train, y_train)
 
-    # Set a tag that we can use to remind ourselves what this run was for
-    mlflow.set_tag("Training Info", "Basic LR model")
+    y_pred = model.predict_proba(X_test)[:, 1]
+    model_score = log_loss(y_test, y_pred)
 
-    # Infer the model signature
-    signature = infer_signature(X_train, lr.predict(X_train))
+    logging.info(f"model score: {model_score:.3f}")
 
-    # Log the model
-    mlflow.sklearn.log_model(
-        sk_model=lr,
-        artifact_path="lr_model",
-        signature=signature,
-        input_example=X_train
-    )
+    # Логирование метрики
+    mlflow.log_metric("log_loss", model_score)
+
+    # Сохранение модели с помощью mlflow
+    mlflow.sklearn.log_model(model, "model")
+
+    # Также сохранение модели локально, если необходимо
+    dump(model, "{}.joblib".format(proj_id))
