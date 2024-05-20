@@ -28,7 +28,7 @@ with DAG(
 
     download_train_task = BashOperator(
         task_id='download_train_task',
-        bash_command=f'hdfs dfs -get Ega2901_train_out {base_dir}/Ega2901_train_out_local',
+        bash_command=f'pwd; echo \$USER hdfs dfs -getmerge Ega2901_train_out {base_dir}/Ega2901_train_out_local',
     )
 
     train_task = BashOperator(
