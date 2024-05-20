@@ -60,11 +60,16 @@ feature_eng_test_task = SparkSubmitOperator(
     dag=dag
 )
 
-predict_task = BashOperator(
+predict_task = SparkSubmitOperator(
     task_id='predict_task',
-    bash_command=f'{pyton_path} {base_dir}/predict.py Ega2901_test_out Ega2901_hw6_prediction {base_dir}/6.joblib',
+    application=f"{base_dir}/predict.py",
+    application_args=["Ega2901_test_out", "Ega2901_hw6_prediction", f"{base_dir}/6.joblib"],
+    spark_binary='/usr/bin/spark3-submit',
+    num_executors=7,
+    executor_cores=1,
+    executor_memory="2G",
+    env_vars={'PYSPARK_PYTHON': pyton_path},
     dag=dag
 )
-
 feature_eng_train_task >> download_train_task >> train_task >> model_sensor >> feature_eng_test_task >> predict_task
 
