@@ -8,6 +8,9 @@ import logging
 sys.path.append('.')
 from model import fields
 
+from model import numeric_features
+fields = ["id"] + numeric_features
+
 #
 # Init the logger
 #
@@ -15,7 +18,7 @@ logging.basicConfig(level=logging.DEBUG)
 logging.info("CURRENT_DIR {}".format(os.getcwd()))
 logging.info("SCRIPT CALLED AS {}".format(sys.argv[0]))
 logging.info("ARGS {}".format(sys.argv[1:]))
-
+logging.info("LABELS {}".format(fields))
 #
 # import the filter
 #
@@ -42,20 +45,20 @@ exec(open(filter_cond_files[0]).read())
 
 if len(sys.argv) == 1:
   #by default print all fields
-    outfields = fields
+  outfields = fields
 else:
-    op, field = sys.argv[1][0], sys.argv[1][1:]
-    logging.info(f"OP {op}")
-    logging.info(f"FIELD {field}")
+  op, field = sys.argv[1][0], sys.argv[1][1:]
+  logging.info(f"OP {op}")
+  logging.info(f"FIELD {field}")
 
-    if not op in "+-" or not field in fields:
-        logging.critical("The optional argument must start with + or - followed by a valid field")
-        sys.exit(1)
-    elif op == '+':
-        outfields = [fields[0], field]
-    else:
-        outfields = list(fields) # like deepcopy, but on the first level only!
-        outfields.remove(field)
+  if not op in "+-" or not field in fields:
+    logging.critical("The optional argument must start with + or - followed by a valid field")
+    sys.exit(1)
+  elif op == '+':
+    outfields = [fields[0], field]
+  else:
+    outfields = list(fields) # like deepcopy, but on the first level only!
+    outfields.remove(field)
 
 
 
@@ -65,12 +68,11 @@ for line in sys.stdin:
         continue
 
     #unpack into a tuple/dict
-    values = line.rstrip().split(',')
+    values = line.rstrip().split('\t')
     hotel_record = dict(zip(fields, values)) #Hotel(values)
+    #logging.info("LABELS {}".format(hotel_record))
 
     #apply filter conditions
     if filter_cond(hotel_record):
-        output = ",".join([hotel_record[x] for x in outfields])
+        output = "\t".join([hotel_record[x] for x in outfields])
         print(output)
-
-
