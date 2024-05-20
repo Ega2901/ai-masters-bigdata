@@ -1,24 +1,13 @@
-#!/opt/conda/envs/dsenv/bin/python
-import os
-import sys
-SPARK_HOME = "/usr/lib/spark3"
-PYSPARK_PYTHON = "/opt/conda/envs/dsenv/bin/python"
-os.environ["PYSPARK_PYTHON"]= PYSPARK_PYTHON
-os.environ["PYSPARK_DRIVER_PYTHON"]= PYSPARK_PYTHON
-os.environ["SPARK_HOME"] = SPARK_HOME
-PYSPARK_HOME = os.path.join(SPARK_HOME, "python/lib")
-sys.path.insert(0, os.path.join(PYSPARK_HOME, "py4j-0.10.9.5-src.zip"))
-sys.path.insert(0, os.path.join(PYSPARK_HOME, "pyspark.zip"))
-from pyspark import SparkContext, SparkConf
+import pyspark
 from pyspark.sql import SparkSession
-conf = SparkConf()
-conf.set("spark.ui.port", "4099")
-spark = SparkSession.builder.config(conf=conf).appName("Spark SQL").getOrCreate()
 from pyspark.sql.functions import col, pandas_udf
 import sys
 from joblib import load
 from pyspark.sql import DataFrame
 from pandas import DataFrame
+
+spark = SparkSession.builder.getOrCreate()
+spark.sparkContext.setLogLevel('WARN')
 
 @pandas_udf("double")
 def process_partition(id, unixReviewTime, verified, vote):
@@ -56,6 +45,3 @@ print("******* ======== Model predicted", (num_rows, num_cols))
 
 df_pred.write.mode('overwrite').csv(predictions_path, header=False)
 print("******* ======== Save predict")
-spark.catalog.clearCache()
-spark.stop()
-
