@@ -1,10 +1,12 @@
-name: MLflow Project
+name: MLflowProject
+
 conda_env: conda.yaml
 
 entry_points:
   main:
     parameters:
-      train_path: {type: str, description: "Path to the training dataset"}
-      model_param1: {type: float, default: 0.1, description: "Some parameter of the model"}
-    command: "python train.py {train_path} {model_param1}"
+      train_path: {type: str}
+      model_param1: {type: int, default: 10}
+    command: "python train.py 0 {train_path} {model_param1}"
+
 
