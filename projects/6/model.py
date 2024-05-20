@@ -1,24 +1,30 @@
-#!/opt/conda/envs/dsenv/bin/python
-import os
 import sys
-import numpy as np
-import pandas as pd 
+import glob
+import pandas as pd
+import json
 from sklearn.linear_model import LogisticRegression
-from joblib import dump, load
+from sklearn.preprocessing import LabelEncoder
+from joblib import dump
 
-if __name__ == "__main__":
-    print('CURRENT PATH')
-    print(sys.argv)
-    input_path = str(sys.argv[1])
-    with open(sys.argv[1], 'r') as file:
-        for line in file:
-            print(line)
-    out_path = str(sys.argv[2])
-    df = pd.read_csv(sys.argv[1])
-    X = df["rawFeatures"].tolist()
-    y = df["label"]
-    model = LogisticRegression(max_iter=1000)
-    model.fit(X, y)
-    dump(model, out_path)
-    spark.stop()
 
+path_out= sys.argv[1] #"train.json"
+model_path=sys.argv[2] #"model_sp"
+
+files = glob.glob(path_out + '/*.json')
+data = []
+
+for file in files:
+    with open(file, 'r') as f:
+        data.extend([json.loads(line) for line in f])
+
+df = pd.DataFrame(data)
+
+X = df.drop('label', axis=1)
+y = df['label']
+
+print (df.columns)
+
+clf = LogisticRegression(solver='liblinear')
+clf.fit(X, y)
+
+dump(clf, model_path)
