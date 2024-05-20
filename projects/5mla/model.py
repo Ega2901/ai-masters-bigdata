@@ -1,40 +1,37 @@
-from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
 from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import log_loss
-import pandas as pd
+from sklearn.model_selection import train_test_split, GridSearchCV
 
-# Определение списка признаков
-numeric_features = ["if"+str(i) for i in range(1, 14)]
-categorical_features = ["cf"+str(i) for i in range(1, 27)]
+#
+# Dataset fields
+#
+numeric_features = ["if"+str(i) for i in range(1,14)]
+categorical_features = ["cf"+str(i) for i in range(1,27)]
+
+# without categorical features
 fields = ["id", "label"] + numeric_features + categorical_features
 
-# Определение опций чтения данных
-read_table_opts = dict(sep="\t", names=fields, index_col=False)
+#
+# Model pipeline
+#
 
-# Определение преобразований для числовых и категориальных признаков
+# We create the preprocessing pipelines for both numeric and categorical data.
 numeric_transformer = Pipeline(steps=[
-    ('imputer', SimpleImputer(missing_values=pd.NA, strategy='median')),
+    ('imputer', SimpleImputer(strategy='median')),
     ('scaler', StandardScaler())
 ])
 
-categorical_transformer = Pipeline(steps=[
-    ('imputer', SimpleImputer(missing_values=pd.NA, strategy='constant', fill_value='miss')),
-    ('onehot', OneHotEncoder(drop='first'))
-])
-
-# Создание объекта ColumnTransformer
 preprocessor = ColumnTransformer(
     transformers=[
         ('num', numeric_transformer, numeric_features),
-        ('cat', categorical_transformer, categorical_features)
-    ])
+    ]
+)
 
-# Определение модели
+# Now we have a full prediction pipeline.
 model = Pipeline(steps=[
     ('preprocessor', preprocessor),
-    ('classifier', LogisticRegression())
+    ('logregression', LogisticRegression())
 ])
