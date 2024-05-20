@@ -1,7 +1,7 @@
 from pyspark.sql.types import *
 from pyspark.sql.functions import col, lit, when
 from pyspark.ml.feature import HashingTF, Tokenizer
-from pyspark.ml import Pipeline
+from pyspark.ml import Pipeline, Transformer
 from pyspark.ml.feature import VectorAssembler
 from pyspark.ml.classification import LogisticRegression
 from pyspark.ml.util import DefaultParamsReadable, DefaultParamsWritable
