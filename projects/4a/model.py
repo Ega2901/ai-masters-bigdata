@@ -10,7 +10,8 @@ from pyspark.ml.util import DefaultParamsReadable, DefaultParamsWritable
 
 
 class CustomImputer(Transformer, DefaultParamsReadable, DefaultParamsWritable):
-    
+
+    # Define the parameters of the transformer
     inputCol = Param(Params._dummy(), "inputCol", "The input column", typeConverter=TypeConverters.toString)
     outputCol = Param(Params._dummy(), "outputCol", "The output column", typeConverter=TypeConverters.toString)
     fillValue = Param(Params._dummy(), "fillValue", "The value to replace missing values with", typeConverter=TypeConverters.toString)
@@ -25,6 +26,7 @@ class CustomImputer(Transformer, DefaultParamsReadable, DefaultParamsWritable):
         if fillValue is not None:
             self.setFillValue(fillValue)
 
+    # Setters for the parameters
     def setInputCol(self, value):
         self._set(inputCol=value)
         return self
@@ -37,6 +39,7 @@ class CustomImputer(Transformer, DefaultParamsReadable, DefaultParamsWritable):
         self._set(fillValue=value)
         return self
 
+    # Getters for the parameters
     def getInputCol(self):
         return self.getOrDefault(self.inputCol)
 
@@ -50,7 +53,9 @@ class CustomImputer(Transformer, DefaultParamsReadable, DefaultParamsWritable):
         input_col = self.getInputCol()
         output_col = self.getOutputCol()
         fill_value = self.getFillValue()
-        return dataset.withColumn(output_col, col(input_col).na.fill(fill_value))
+
+        # Perform the imputation by replacing nulls with the fill value
+        return dataset.withColumn(output_col, col(input_col)).fillna({input_col: fill_value})
 
 
 
