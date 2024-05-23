@@ -19,7 +19,7 @@ class CustomImputer(
 
     @keyword_only
     def __init__(self, tokens=None):
-        super(FillnaTransformer, self).__init__()
+        super(CustomImputer, self).__init__()
         kwargs = self._input_kwargs
         self._set(**kwargs)
 
