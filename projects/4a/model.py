@@ -1,65 +1,39 @@
 from pyspark.sql.types import *
+from pyspark import keyword_only
 from pyspark.sql import DataFrame
 from pyspark.sql.functions import col, lit, when
 from pyspark.ml.feature import HashingTF, Tokenizer
 from pyspark.ml import Pipeline, Transformer
 from pyspark.ml.feature import VectorAssembler
 from pyspark.ml.classification import LogisticRegression
-from pyspark.ml.param.shared import Param, Params, TypeConverters
+from pyspark.ml.param import Param, Params
 from pyspark.ml.util import DefaultParamsReadable, DefaultParamsWritable
 
+class CustomImputer(
+    DefaultParamsReadable,
+    DefaultParamsWritable,
+    Transformer
+):
 
-class CustomImputer(Transformer, DefaultParamsReadable, DefaultParamsWritable):
+    tokens = Param(Params()._dummy(), "tokens", "dict: column_name -> value")
 
-    # Define the parameters of the transformer
-    inputCol = Param(Params._dummy(), "inputCol", "The input column", typeConverter=TypeConverters.toString)
-    outputCol = Param(Params._dummy(), "outputCol", "The output column", typeConverter=TypeConverters.toString)
-    fillValue = Param(Params._dummy(), "fillValue", "The value to replace missing values with", typeConverter=TypeConverters.toString)
+    @keyword_only
+    def __init__(self, tokens=None):
+        super(FillnaTransformer, self).__init__()
+        kwargs = self._input_kwargs
+        self._set(**kwargs)
 
-    def __init__(self, inputCol=None, outputCol=None, fillValue=None):
-        super(CustomImputer, self).__init__()
-        self._setDefault(inputCol=None, outputCol=None, fillValue=None)
-        if inputCol is not None:
-            self.setInputCol(inputCol)
-        if outputCol is not None:
-            self.setOutputCol(outputCol)
-        if fillValue is not None:
-            self.setFillValue(fillValue)
+    def getTokens(self):
+        return self.getOrDefault(self.tokens)
 
-    # Setters for the parameters
-    def setInputCol(self, value):
-        self._set(inputCol=value)
-        return self
+    def setTokens(self, tokens):
+        return self.setParams(tokens=tokens)
 
-    def setOutputCol(self, value):
-        self._set(outputCol=value)
-        return self
+    def _transform(self, df):
+        df = df.fillna(self.getTokens())
+        return df
 
-    def setFillValue(self, value):
-        self._set(fillValue=value)
-        return self
-
-    # Getters for the parameters
-    def getInputCol(self):
-        return self.getOrDefault(self.inputCol)
-
-    def getOutputCol(self):
-        return self.getOrDefault(self.outputCol)
-
-    def getFillValue(self):
-        return self.getOrDefault(self.fillValue)
-
-    def _transform(self, dataset: DataFrame) -> DataFrame:
-        input_col = self.getInputCol()
-        output_col = self.getOutputCol()
-        fill_value = self.getFillValue()
-
-        # Perform the imputation by replacing nulls with the fill value
-        return dataset.withColumn(output_col, col(input_col)).fillna({input_col: fill_value})
-
-
-
-customImputer = CustomImputer(inputCol='reviewText', outputCol='reviewText_clear', fillValue="missing")
+customImputer = CustomImputer(tokens={"reviewText": "missing"})
 tokenizer = Tokenizer(inputCol = 'reviewText_clear', outputCol = 'tokens')
 hashingTF = HashingTF(numFeatures=100, binary=True, inputCol = 'tokens', outputCol = 'rawFeatures')
 lr = LogisticRegression(featuresCol='rawFeatures',
