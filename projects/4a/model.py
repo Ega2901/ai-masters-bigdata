@@ -34,7 +34,7 @@ class CustomImputer(
         return df
 
 customImputer = CustomImputer(tokens={"reviewText": "missing"})
-tokenizer = Tokenizer(inputCol = 'reviewText_clear', outputCol = 'tokens')
+tokenizer = Tokenizer(inputCol = 'reviewText', outputCol = 'tokens')
 hashingTF = HashingTF(numFeatures=100, binary=True, inputCol = 'tokens', outputCol = 'rawFeatures')
 lr = LogisticRegression(featuresCol='rawFeatures',
                         labelCol='overall')
